@@ -1,6 +1,9 @@
 # Dependências
 node_modules/
-package-lock.json
+
+# Build e arquivos gerados
+dist/
+.vite/
 
 # Arquivos e configurações do Sistema Operacional
 Thumbs.db
@@ -28,3 +31,5 @@ $RECYCLE.BIN/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
+

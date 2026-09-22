@@ -126,3 +126,18 @@ As mensagens de commit seguem a convenção semântica:
 - `refactor:` refatoração de código sem alterar regra de negócio.
 - `style:` ajustes visuais de formatação de código.
 - `chore:` tarefas de manutenção, configuração e ferramentas.
+
+## 🏗️ Build e Deploy para Produção
+
+A aplicação foi preparada para produção com **Vite**, utilizado como bundler e ferramenta de build. A configuração está em `vite.config.js` e o processo de produção é executado com:
+
+```bash
+npm install
+npm run build
+```
+
+O comando gera a pasta `dist/` com os arquivos otimizados para produção, incluindo a minificação dos recursos processados pelo Vite.
+
+Para publicação, foi configurado um workflow do GitHub Actions em `.github/workflows/deploy.yml`. A cada atualização da branch `main`, o workflow instala as dependências, executa o build e publica o conteúdo da pasta `dist/` no GitHub Pages.
+
+O arquivo `404.html` é preparado a partir da entrada principal da SPA para permitir o funcionamento das rotas da aplicação em hospedagem estática.
