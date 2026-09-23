@@ -292,27 +292,98 @@ export function templateProjetos() {
     `;
 }
 
+export function obterBasePath() {
+    const partes = window.location.pathname.split('/').filter(Boolean);
+    if (partes.length > 0) {
+        const primeiro = partes[0];
+        if (primeiro === 'projeto-rede-solidaria' || primeiro === 'html') {
+            return `/${primeiro}`;
+        }
+        if (window.location.hostname.endsWith('github.io') && !['cadastro', 'cadastro.html', 'projetos', 'index.html'].includes(primeiro)) {
+            return `/${primeiro}`;
+        }
+    }
+    return '';
+}
+
+export function resolverRotaInterna(caminho) {
+    if (!caminho) return '/';
+
+    const base = obterBasePath();
+    let rota = caminho;
+
+    if (base && rota.startsWith(base)) {
+        rota = rota.slice(base.length);
+    }
+
+    rota = rota.split('?')[0].split('#')[0];
+    rota = rota.replace(/^(\.\.?\/)+/, '/').replace(/\/+/g, '/');
+
+    if (!rota.startsWith('/')) {
+        rota = `/${rota}`;
+    }
+
+    if (rota === '/' || rota === '/index.html' || rota === '') {
+        return '/';
+    }
+
+    if (rota === '/cadastro' || rota === '/cadastro.html') {
+        return '/cadastro';
+    }
+
+    if (rota === '/projetos') {
+        return '/projetos';
+    }
+
+    return rota;
+}
+
+export function gerarUrlNavegacao(rotaInterna) {
+    const base = obterBasePath();
+    if (rotaInterna === '/') {
+        return base ? `${base}/` : '/';
+    }
+    return `${base}${rotaInterna}`;
+}
+
+function atualizarLinksAtivos(rotaInterna) {
+    const links = document.querySelectorAll('.menu a[data-rota]');
+    links.forEach(link => {
+        const rotaLink = resolverRotaInterna(link.getAttribute('data-rota'));
+        if (rotaLink === rotaInterna) {
+            link.classList.add('ativo');
+        } else {
+            link.classList.remove('ativo');
+        }
+    });
+}
+
 export function renderizar(rota) {
     const app = obterApp();
     if (!app) return;
 
+    const rotaInterna = resolverRotaInterna(rota);
     app.innerHTML = '';
 
-    if (rota === '/' || rota === '/index.html') {
+    if (rotaInterna === '/') {
         app.innerHTML = templateInicio();
+        atualizarLinksAtivos('/');
         return;
     }
 
-    if (rota === '/cadastro' || rota === '/cadastro.html') {
+    if (rotaInterna === '/cadastro') {
         app.innerHTML = templateCadastro();
+        atualizarLinksAtivos('/cadastro');
         return;
     }
 
-    if (rota === '/projetos') {
+    if (rotaInterna === '/projetos') {
         app.innerHTML = templateProjetos();
+        atualizarLinksAtivos('/projetos');
         return;
     }
 
+    atualizarLinksAtivos('');
     app.innerHTML = `
         <section class="secao">
             <h1>Página não encontrada</h1>
@@ -328,9 +399,12 @@ export function iniciarSPA() {
         if (!link) return;
 
         e.preventDefault();
-        const rota = link.getAttribute('data-rota');
-        history.pushState({}, '', rota);
-        renderizar(rota);
+        const rotaAttr = link.getAttribute('data-rota');
+        const rotaInterna = resolverRotaInterna(rotaAttr);
+        const urlDestino = gerarUrlNavegacao(rotaInterna);
+
+        history.pushState({}, '', urlDestino);
+        renderizar(rotaInterna);
     });
 
     window.addEventListener('popstate', () => {
